@@ -89,8 +89,24 @@ You should see 5 rows of HDB resale data. If you get an error, post in **#questi
 Try to answer these before class, then check below.
 
 1. What is the difference between `WHERE` and `HAVING`?
+
+```
+WHERE operates on rows, HAVING operates on groups
+```
+
 2. If you want to count how many flats were sold in each town, what SQL structure would you use?
+
+```
+SELECT town, COUNT(*) AS count
+FROM resale_flat_prices_2017
+GROUP BY town;
+```
+
 3. What does `SELECT *` return, and why is it sometimes avoided?
+
+```
+It returns everything, and would take very long to run for large datasets
+```
 
 <details>
 <summary>Suggested answers</summary>

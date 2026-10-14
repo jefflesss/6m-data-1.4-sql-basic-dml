@@ -106,6 +106,16 @@ ORDER BY
 - Select any 3 columns from the table.
 - Select flats from highest to lowest resale price in Punggol.
 
+```sql
+SELECT
+  town, street_name, resale_price
+FROM
+  resale_flat_prices_2017
+WHERE CONTAINS(town,'PUNGGOL')
+ORDER BY
+  resale_price DESC;
+```
+
 > **What's Your Query?**
 > "If our table had 100 columns and a million rows, what would happen to our computer's memory if we always used `SELECT *`?"
 >
@@ -167,6 +177,22 @@ ORDER BY
 - "I want to find a home for my parents. They need something larger than 100sqm, but my budget is strictly under $600,000. How would we write that rule?"
 - Define your own filter for flats in a specific town, with a price range and floor area requirement etc. Then sort the results by resale price (highest first) and floor area (largest first).
 
+```sql
+SELECT
+  street_name,
+  resale_price / 1000 AS price_k,
+  floor_area_sqm
+FROM
+  resale_flat_prices_2017
+WHERE
+  CONTAINS(town,'PUNGGOL') AND
+  resale_price < 500000 AND
+  floor_area_sqm > 100
+ORDER BY
+  resale_price DESC,
+  floor_area_sqm DESC;
+```
+
 > **What's Your Query?**
 
 **Comparison and Logical Operators:**
@@ -199,6 +225,29 @@ WHERE
 - Select flats with resale price between 400,000 and 500,000.
 - Select flats with lease commence date later than year 2000 and floor area greater than 100 sqm.
 
+```
+SELECT
+  *
+FROM
+  resale_flat_prices_2017
+WHERE
+  floor_area_sqm > 100;
+
+SELECT
+  *
+FROM
+  resale_flat_prices_2017
+WHERE
+  resale_price > 400000 AND resale_price < 500000
+
+SELECT
+  *
+FROM
+  resale_flat_prices_2017
+WHERE
+  lease_commence_date > 2000 AND floor_area_sqm > 100
+```
+
 **Advanced Filters:**
 
 ```sql
@@ -221,6 +270,16 @@ SELECT DISTINCT town FROM resale_flat_prices_2017;
 👋 **Exercise 4:**
 - Return the unique flat types and flat models.
 - Find all towns starting with "P".
+
+```sql
+SELECT DISTINCT flat_type,flat_model FROM 
+resale_flat_prices_2017
+
+SELECT * FROM 
+resale_flat_prices_2017
+WHERE town LIKE 'P%'
+```
+
 
 **Functions:**
 
@@ -248,6 +307,12 @@ FROM
 
 - Do SQL keywords need to be capitalized? Why do we use uppercase for them anyway?
 - How would a real estate app or website use these filters when a user moves a slider on their screen?
+
+```
+SQL keywords are capitalised to make the code easier to read and to distinguish functions from the variables / columns used
+
+The sliders adjust dynamically based on the slider
+```
 
 ---
 
@@ -315,7 +380,27 @@ GROUP BY
 
 👋 **Exercise 5:**
 - Select the average resale price of flats in Bishan.
+```
+SELECT
+  town, AVG(resale_price) AS avg_price
+FROM
+  resale_flat_prices_2017
+WHERE
+  town = 'BISHAN'
+GROUP BY
+  town;
+```
 - Select the total resale value (price) of flats in Tampines.
+```
+SELECT
+  town, SUM(resale_price) AS total_price
+FROM
+  resale_flat_prices_2017
+WHERE
+  town = 'TAMPINES'
+GROUP BY
+  town;
+```
 
 ---
 
@@ -408,13 +493,93 @@ GROUP BY
 
 👋👋👋 **Group Exercise 6:**
 - Select the average resale price by flat type.
+```sql
+SELECT
+  flat_type, 
+  AVG(resale_price) AS avg_price
+FROM
+  resale_flat_prices_2017
+GROUP BY
+  flat_type
+ORDER BY
+  flat_type ASC;
+
+```
+
 - Select the average resale price by flat type and flat model.
+```sql
+SELECT
+  flat_type,
+  flat_model,
+  AVG(resale_price) AS avg_price
+FROM
+  resale_flat_prices_2017
+GROUP BY
+  flat_type, flat_model
+ORDER BY
+  flat_type ASC;
+```
+
 - Select the average resale price by town and lease commence date, only for lease commence dates after year 2010, sorted by town (descending) and lease commence date (descending).
+```sql
+SELECT
+  town,
+  lease_commence_date,
+  AVG(resale_price) AS avg_price
+FROM
+  resale_flat_prices_2017
+WHERE
+  lease_commence_date > 2010
+GROUP BY
+  town, lease_commence_date
+ORDER BY
+  town DESC,
+  lease_commence_date DESC;
+```
+
 
 👋👋👋 **Group Exercise 7 — HAVING:**
 - Count transactions per town, then show only towns with more than 5,000 transactions.
+```sql
+SELECT
+  town,
+  COUNT(*) AS count_transactions
+FROM
+  resale_flat_prices_2017
+GROUP BY
+  town
+HAVING
+count_transactions > 5000
+ORDER BY
+  town DESC;
+```
+
 - Show the average floor area per flat type, but only for flat types whose average floor area is above 90 sqm.
+```sql
+SELECT
+  flat_type,
+  AVG(floor_area_sqm) AS avg_floor_area
+FROM
+  resale_flat_prices_2017
+GROUP BY
+  flat_type
+HAVING
+avg_floor_area > 90;
+```
+
 - Find towns where the maximum resale price exceeds $900,000, sorted highest first. (Hint: filter on `MAX(resale_price)` in `HAVING`.)
+
+```sql
+SELECT
+  town,
+  MAX(resale_price) AS max_price
+FROM
+  resale_flat_prices_2017
+GROUP BY
+  town
+HAVING
+max_price > 900000;
+```
 
 ### 💬 Reflection
 
@@ -466,7 +631,32 @@ FROM
 
 👋👋👋 **Group Exercise 8:**
 - Design your own "budget/mid/high-end" categories based on resale_price.
+```sql
+SELECT
+  town,
+  resale_price,
+  CASE
+    WHEN resale_price > 800000 THEN 'High'
+    WHEN resale_price > 400000 THEN 'Low'
+    ELSE 'Low'
+  END AS price_category
+FROM
+  resale_flat_prices_2017;
+```
 - Design a "old vs new" label based on lease_commence_date.
+```sql
+SELECT
+  town,
+  lease_commence_date,
+  CASE
+    WHEN lease_commence_date > 2000 THEN 'New'
+    ELSE 'Old'
+  END AS new_or_old
+FROM
+  resale_flat_prices_2017;
+GROUP BY
+  town
+```
 
 ---
 
@@ -516,10 +706,41 @@ FROM resale_flat_prices_2017;
 
 > **Question:** "If the `month` column is text `'2017-01'`, can we add 1 month to it directly? Why do we need to `CAST` it to a `DATE` type first?"
 
+```
+Need to add, we cannot do date calculations on text
+```
+
 👋👋👋 **Group Exercise 9 — CAST:**
 - Show `resale_price` rounded down to the nearest thousand by casting to `INTEGER` (e.g. `resale_price / 1000` cast to `INTEGER`, then `* 1000`).
+```sql
+SELECT
+    resale_price,
+    CAST(resale_price/1000 * 1000 AS INTEGER) AS resale_price_int,
+    resale_price_int * 1000 AS rounded_resale_price
+FROM resale_flat_prices_2017;
+
+```
+
 - Convert the text `month` column to a real `DATE` and extract the transaction month number (1–12).
+```sql
+SELECT
+    month,
+    CAST(month || '-15' AS DATE) AS transaction_date,
+    EXTRACT(MONTH FROM CAST (month || '-15' AS DATE)) AS transaction_month
+FROM resale_flat_prices_2017
+ORDER BY transaction_month DESC;
+```
+
 - Cast `floor_area_sqm` to `INTEGER` and show it next to the original value — what happens to the decimals?
+
+```sql
+SELECT
+    floor_area_sqm,
+    CAST(floor_area_sqm AS INTEGER) AS floor_area_int,
+FROM resale_flat_prices_2017;
+
+--There are no decimals
+```
 
 **Optional — Changing the Table Schema:**
 
@@ -550,7 +771,14 @@ FROM
 ### 💬 Reflection
 
 - What does the `::` mean in DuckDB/PostgreSQL? How does it relate to `CAST()`?
+```
+It functions as CAST
+```
 - Why is it important to standardize date formats when merging data from two different countries?
+```
+Because American dates are MMDDYYYY, British dates are DDMMYYYY. Dates such as 31/12/2026 in British dates would be invalid for American dates
+```
+
 
 ---
 
